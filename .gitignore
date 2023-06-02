@@ -213,3 +213,7 @@ cython_debug/
 
 .idea/
 
+data.json
+
+tests_tmp.py
+
