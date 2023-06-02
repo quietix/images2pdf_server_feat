@@ -3,7 +3,8 @@ from src.server.tgbot_app.my_stuff.msgs.txtMsg import TxtMsg
 from src.server.tgbot_app.my_stuff.msgs.imgMsg import ImgMsg
 from src.server.tgbot_app.my_stuff.msgs.fileMsg import FileMsg
 
-class Msg_Creator():
+
+class Msg_Creator:
 
     # Factory method
     @staticmethod

@@ -10,7 +10,7 @@ from src.server.tgbot_app.my_stuff.msgs.imgMsg import ImgMsg
 from src.server.tgbot_app.my_stuff.msgs.fileMsg import FileMsg
 
 
-class Handler_Creator():
+class Handler_Creator:
 
     # Factory method
     @staticmethod
