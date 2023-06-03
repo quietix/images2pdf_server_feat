@@ -5,6 +5,7 @@ from src.server.setupConfig import bot
 import time
 
 
+# Facade (hiding system complexity behind simple interface)
 class StandardPdfCreator(PdfCreator):
 
     def __init__(self, chat_id, user_id):

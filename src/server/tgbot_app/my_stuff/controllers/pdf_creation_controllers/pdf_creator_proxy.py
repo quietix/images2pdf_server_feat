@@ -2,10 +2,9 @@ from .pdf_creator import PdfCreator
 from .standard_pdf_creator import StandardPdfCreator
 from ...response import Response
 from ...file_manager.local_file_manager import LocalFileManager
-from src.server.setupConfig import bot
-import time
 
 
+# Proxy
 class PdfCreatorProxy(PdfCreator):
 
     _standardPdfCreator: StandardPdfCreator
