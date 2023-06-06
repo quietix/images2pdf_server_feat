@@ -1,7 +1,7 @@
 from .handlers_controller import Handlers_Controller
 from ..factories.msg_creator import Msg_Creator
 from ..factories.handler_creator import Handler_Creator
-from ..file_manager.local_file_manager import LocalFileManager
+from ..file_managers.local_file_manager import LocalFileManager
 
 class Main_Controller:
     @staticmethod

@@ -1,7 +1,7 @@
-from .file_manager import FileManager
+from .base_file_manager import BaseFileManager
 
 
-class RemoteFileManager(FileManager):
+class RemoteFileManager(BaseFileManager):
     @staticmethod
     def record_request(request_body):
         pass

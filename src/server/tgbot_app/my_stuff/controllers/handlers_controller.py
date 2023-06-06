@@ -1,4 +1,4 @@
-from src.server.tgbot_app.my_stuff.request_handlers.requestHandler import RequestHandler
+from src.server.tgbot_app.my_stuff.request_handlers.request_handler import RequestHandler
 from src.server.tgbot_app.my_stuff.msgs.msg import Msg
 
 
@@ -14,3 +14,6 @@ class Handlers_Controller:
 
     def handle_request(self):
         self.__handler.handle_request(self.__msg)
+
+    def change_handling_strategy(self, handler: RequestHandler):
+        self.__handler = handler
