@@ -4,6 +4,8 @@ from src.server.tgbot_app.my_stuff.msgs.txtMsg import TxtMsg
 from src.server.tgbot_app.my_stuff.msgs.imgMsg import ImgMsg
 from src.server.tgbot_app.my_stuff.variables import downloads_path
 from src.server.tgbot_app.my_stuff.variables import img_2_pdf_stop_commands
+from src.server.tgbot_app.my_stuff.files_composite.file import File
+from src.server.tgbot_app.my_stuff.files_composite.composite_file import CompositeFile
 import os
 import dotenv
 import json

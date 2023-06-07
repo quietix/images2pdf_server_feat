@@ -2,10 +2,9 @@ from .base_file_manager import BaseFileManager
 
 
 class RemoteFileManager(BaseFileManager):
-    @staticmethod
-    def record_request(request_body):
-        pass
 
-    @staticmethod
-    def download_photo(user_id):
-        pass
+    def _actual_record(self, request_body):
+        print("Recording request to remote DB...")
+
+    def _after_record(self, request_body):
+        print("Checking if something should be cleaned up")

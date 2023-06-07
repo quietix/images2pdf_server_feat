@@ -6,7 +6,8 @@ from ..file_managers.local_file_manager import LocalFileManager
 class Main_Controller:
     @staticmethod
     def handle_request(request_body):
-        LocalFileManager.record_request(request_body)
+        file_manager = LocalFileManager()
+        file_manager.record_request(request_body)
 
         msg = Msg_Creator.create_msg(request_body)
         handler = Handler_Creator.create_handler(msg)

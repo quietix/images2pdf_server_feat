@@ -11,10 +11,7 @@ from src.server.tgbot_app.my_stuff.responses.img_2_pdf_creation_response import 
 
 class LocalFileManager(BaseFileManager):
 
-    response = Img2PdfCreationResponse()
-
-    @staticmethod
-    def record_request(request_body):
+    def _actual_record(self, request_body):
         if os.path.exists(dotenv.dotenv_values('.env')['JSON_DATA_PATH']):
             with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as f:
                 data_list: list = json.load(f)
@@ -24,23 +21,21 @@ class LocalFileManager(BaseFileManager):
             with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'w') as f:
                 json.dump(data_list, f, indent=4)
 
-            try:
-                LocalFileManager._clean_data_file()
-            except:
-                LocalFileManager._full_data_clean()
         else:
             data_list: list = [request_body]
 
             with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'w') as f:
                 json.dump(data_list, f, indent=4)
 
-            try:
-                LocalFileManager._clean_data_file()
-            except:
-                LocalFileManager._full_data_clean()
+    def _after_record(self, request_body):
+        try:
+            self._clean_data_file()
+        except:
+            self._full_data_clean()
 
-    @staticmethod
-    def _full_data_clean():
+    response = Img2PdfCreationResponse()
+
+    def _full_data_clean(self):
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as rd:
             data_list: list = json.load(rd)
             data_list = [data_list[len(data_list) - 1]]
@@ -48,8 +43,7 @@ class LocalFileManager(BaseFileManager):
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'w') as fp:
             json.dump(data_list, fp, indent=4)
 
-    @staticmethod
-    def _clean_data_file():
+    def _clean_data_file(self):
         limit = int(dotenv.dotenv_values('.env')['DATA_LIST_LIMIT'])
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as rd:
             data_list: list = json.load(rd)
@@ -60,14 +54,12 @@ class LocalFileManager(BaseFileManager):
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'w') as fp:
             json.dump(data_list, fp, indent=4)
 
-    @staticmethod
-    def delete_directory(user_id):
+    def delete_directory(self, user_id):
         downloads_path = dotenv.dotenv_values('.env')['DOWNLOADS_PATH']
         if os.path.exists(f'{downloads_path}/{user_id}'):
             shutil.rmtree(f'{downloads_path}/{user_id}/')
 
-    @staticmethod
-    def get_last_non_command_message_text(user_id):
+    def get_last_non_command_message_text(self, user_id):
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as f:
             data_list: list = json.load(f)
             data_list.reverse()
