@@ -14,7 +14,11 @@ class CommonCmdsHandler(AbstractTxtRequestHandler):
 
     def handle_request(self, msg: TxtMsg):
         if msg.text == '/start':
-            self._common_response.send_message(msg.chat_id, "Вітаю")
+            txt = "Що можна зробити:\n\n" \
+                  "1) /create_pdf - створити pdf із фото.\n\n" \
+                  "2) /merge_pdf - об'єднати декілька pdf у один.\n\n" \
+                  "Оберіть необхідний варіант і дотримуйтесь вказівок."
+            self._common_response.send_message(msg.chat_id, txt)
 
         elif msg.text == '/help':
             txt = "Що можна зробити:\n\n" \

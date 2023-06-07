@@ -1,7 +1,6 @@
 from src.server.tgbot_app.my_stuff.msgs.txtMsg import TxtMsg
 from src.server.tgbot_app.my_stuff.request_handlers.txt_handlers.txt_request_handler import TxtRequestHandler
 from abc import abstractmethod
-from src.server.tgbot_app.my_stuff.factories.interaction_stuff_factories.base_interaction_stuff_factory import BaseInteractionStuffFactory
 
 
 # Chain of responsibility

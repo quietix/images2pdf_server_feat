@@ -5,6 +5,7 @@ from src.server.tgbot_app.my_stuff.msgs.msg import Msg
 # Context
 class Handlers_Controller:
     __msg: Msg
+
     # Strategy
     __handler: RequestHandler
 

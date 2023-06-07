@@ -5,7 +5,6 @@ from src.server.tgbot_app.my_stuff.msgs.txtMsg import TxtMsg
 from abc import abstractmethod
 
 
-# Chain of responsibility
 class TxtRequestHandler(RequestHandler):
 
     @abstractmethod
