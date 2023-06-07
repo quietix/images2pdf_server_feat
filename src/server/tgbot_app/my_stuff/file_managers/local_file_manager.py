@@ -7,6 +7,9 @@ from src.server.tgbot_app.my_stuff.variables import ready_commands
 from ..msgs.txtMsg import TxtMsg
 import shutil
 from src.server.tgbot_app.my_stuff.responses.img_2_pdf_creation_response import Img2PdfCreationResponse
+from src.server.tgbot_app.my_stuff.variables import downloads_path
+from src.server.tgbot_app.my_stuff.files_composite.composite_file import CompositeFile
+from src.server.tgbot_app.my_stuff.files_composite.file import File
 
 
 class LocalFileManager(BaseFileManager):
@@ -55,9 +58,11 @@ class LocalFileManager(BaseFileManager):
             json.dump(data_list, fp, indent=4)
 
     def delete_directory(self, user_id):
-        downloads_path = dotenv.dotenv_values('.env')['DOWNLOADS_PATH']
-        if os.path.exists(f'{downloads_path}/{user_id}'):
-            shutil.rmtree(f'{downloads_path}/{user_id}/')
+        user_dir_composite = CompositeFile(f'{downloads_path}/{user_id}')
+        for file in os.listdir(f'{downloads_path}/{user_id}/'):
+            filename = os.fsdecode(file)
+            user_dir_composite.add_item(File(filename))
+        user_dir_composite.delete_self()
 
     def get_last_non_command_message_text(self, user_id):
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as f:

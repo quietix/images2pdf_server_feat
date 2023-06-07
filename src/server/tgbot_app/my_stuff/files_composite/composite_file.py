@@ -2,6 +2,7 @@ from .base_file import BaseFile
 import os
 
 
+# Composite
 class CompositeFile(BaseFile):
 
     children: list[BaseFile]

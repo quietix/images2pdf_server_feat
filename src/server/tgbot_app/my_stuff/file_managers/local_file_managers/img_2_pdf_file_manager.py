@@ -14,49 +14,55 @@ from PIL import Image, ImageOps
 
 class Img2PdfFileManager(LocalFileManager):
 
-    def download_photos(self, user_id) -> list[str]:
+    def download_photos(self, user_id) -> CompositeFile:
         if not os.path.exists(downloads_path):
-            os.mkdir(dotenv.dotenv_values('.env')['DOWNLOADS_PATH'])
+            os.mkdir(downloads_path)
+
+        if not os.path.exists(f'{downloads_path}/{user_id}'):
+            os.mkdir(f'{downloads_path}/{user_id}')
+
+        user_dir = CompositeFile(f'{downloads_path}/{user_id}')
+
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as rd:
             data_list = json.load(rd)
-            data_list.reverse()
-            photos_list = []
-            counter = 1
-            for i in range(0, len(data_list)):
-                msg = Msg_Creator.create_msg(data_list[i])
-                if msg.user_id == user_id:
-                    if isinstance(msg, TxtMsg):
-                        msg_text = msg.text
-                        if msg_text in img_2_pdf_stop_commands:
-                            break
 
-                    elif isinstance(msg, ImgMsg):
-                        if not os.path.exists(f'{downloads_path}/{user_id}'):
-                            os.mkdir(f'{downloads_path}/{user_id}')
-                        file_id = msg.file_id
-                        file_name = f'image{counter}.jpg'
-                        file_path = f'{downloads_path}/{user_id}/{file_name}'
-                        counter += 1
-                        photos_list.append(file_path)
-                        self.response.download_file(file_id, file_path)
+        data_list.reverse()
+        counter = 1
 
-        return photos_list
+        for i in range(0, len(data_list)):
+            msg = Msg_Creator.create_msg(data_list[i])
+            if msg.user_id == user_id:
+                if isinstance(msg, TxtMsg):
+                    msg_text = msg.text
+                    if msg_text in img_2_pdf_stop_commands:
+                        break
 
-    def create_photo_paths_list(self, user_id) -> list[str]:
+                elif isinstance(msg, ImgMsg):
+                    file_id = msg.file_id
+                    file_name = f'image{counter}.jpg'
+                    file_path = f'{downloads_path}/{user_id}/{file_name}'
+                    user_dir.add_item(File(file_name))
+                    counter += 1
+                    self.response.download_file(file_id, file_path)
+
+        return user_dir
+
+    def create_photo_paths_list(self, user_id) -> CompositeFile:
         """Creates paths list from photos that exist in <user_id/> folder. Is used to prevent empty pdf creation try."""
 
-        photo_list = []
+        user_dir = CompositeFile(f'{downloads_path}/{user_id}')
         i = 1
         while 1:
-            if os.path.exists(f'{downloads_path}/{user_id}/image{i}.jpg'):
-                photo_list.append(f'{downloads_path}/{user_id}/image{i}.jpg')
+            tmp_path = f'{downloads_path}/{user_id}/image{i}.jpg'
+            if os.path.exists(tmp_path):
+                user_dir.add_item(File(f'image{i}.jpg'))
                 i += 1
             else:
                 break
-        return photo_list
+        return user_dir
 
     # when photo_list is ready
-    def create_pdf_from_photo_list(self, user_id, photos_list: list, file_name) -> str:
+    def create_pdf_from_photo_list(self, user_dir_composite: CompositeFile, file_name) -> str:
         """
         Creates pdf file from photo paths in <user_id/> folder
         :param user_id: stands for the folder name where photos are stored
@@ -65,15 +71,18 @@ class Img2PdfFileManager(LocalFileManager):
         :return: path to created pdf
         """
 
-        photos_count = len(photos_list)
+        photos_count = len(user_dir_composite.children)
         image_list = []
 
         for i in range(photos_count - 1, -1, -1):
-            image = Image.open(f'{downloads_path}/{user_id}/image{i + 1}.jpg')
+            tmp_path = user_dir_composite.children[i].path
+            image = Image.open(tmp_path)
             image = ImageOps.exif_transpose(image)
             image_list.append(image)
 
-        image_list[0].save(f'{downloads_path}/{user_id}/{file_name}.pdf', resolution=100.0, save_all=True,
+        user_dir_composite.add_item(File(f'{file_name}.pdf'))
+
+        image_list[0].save(user_dir_composite.children[-1].path, resolution=100.0, save_all=True,
                            append_images=image_list[1:])
 
-        return f'{downloads_path}/{user_id}/{file_name}.pdf'
+        return user_dir_composite.children[-1].path

@@ -3,6 +3,8 @@ from src.server.tgbot_app.my_stuff.factories.msg_creator import Msg_Creator
 from src.server.tgbot_app.my_stuff.msgs.txtMsg import TxtMsg
 from src.server.tgbot_app.my_stuff.msgs.fileMsg import FileMsg
 from src.server.tgbot_app.my_stuff.variables import downloads_path
+from src.server.tgbot_app.my_stuff.files_composite.file import File
+from src.server.tgbot_app.my_stuff.files_composite.composite_file import CompositeFile
 from pypdf import PdfMerger
 from src.server.tgbot_app.my_stuff.variables import merge_pdf_stop_commands
 import os
@@ -12,52 +14,56 @@ import json
 
 class MergePdfFileManager(LocalFileManager):
 
-    def download_pdfs(self, user_id) -> list[str]:
+    def download_pdfs(self, user_id) -> CompositeFile:
         if not os.path.exists(downloads_path):
-            os.mkdir(dotenv.dotenv_values('.env')['DOWNLOADS_PATH'])
+            os.mkdir(downloads_path)
+
+        if not os.path.exists(f'{downloads_path}/{user_id}'):
+            os.mkdir(f'{downloads_path}/{user_id}')
+
+        user_dir = CompositeFile(f'{downloads_path}/{user_id}')
+
         with open(dotenv.dotenv_values('.env')['JSON_DATA_PATH'], 'r') as rd:
             data_list = json.load(rd)
-            data_list.reverse()
-            pdf_list = []
-            counter = 1
-            for i in range(0, len(data_list)):
-                msg = Msg_Creator.create_msg(data_list[i])
-                if msg.user_id == user_id:
-                    if isinstance(msg, TxtMsg):
-                        msg_text = msg.text
-                        if msg_text in merge_pdf_stop_commands:
-                            break
 
-                    elif isinstance(msg, FileMsg):
-                        if not os.path.exists(f'{downloads_path}/{user_id}'):
-                            os.mkdir(f'{downloads_path}/{user_id}')
+        data_list.reverse()
+        counter = 1
 
-                        if os.path.splitext(msg.file_name)[1] == '.pdf':
-                            file_id = msg.file_id
-                            file_name = f'file{counter}.pdf'
-                            file_path = f'{downloads_path}/{user_id}/{file_name}'
-                            counter += 1
-                            pdf_list.append(file_path)
-                            self.response.download_file(file_id, file_path)
+        for i in range(0, len(data_list)):
+            msg = Msg_Creator.create_msg(data_list[i])
+            if msg.user_id == user_id:
+                if isinstance(msg, TxtMsg):
+                    msg_text = msg.text
+                    if msg_text in merge_pdf_stop_commands:
+                        break
 
-        return pdf_list
+                elif isinstance(msg, FileMsg):
+                    if os.path.splitext(msg.file_name)[1] == '.pdf':
+                        file_id = msg.file_id
+                        file_name = f'file{counter}.pdf'
+                        file_path = f'{downloads_path}/{user_id}/{file_name}'
+                        user_dir.add_item(File(file_name))
+                        counter += 1
+                        self.response.download_file(file_id, file_path)
 
-    def create_pdf_paths_list(self, user_id) -> list[str]:
+        return user_dir
+
+    def create_pdf_paths_list(self, user_id) -> CompositeFile:
         """Creates paths list from pdf files that exist in <user_id/> folder. Is used to prevent empty pdf creation try."""
 
-        pdf_list = []
+        user_dir = CompositeFile(f'{downloads_path}/{user_id}')
         i = 1
         while 1:
-            if os.path.exists(f'{downloads_path}/{user_id}/file{i}.pdf'):
-                pdf_list.append(f'{downloads_path}/{user_id}/file{i}.pdf')
+            tmp_path = f'{downloads_path}/{user_id}/file{i}.pdf'
+            if os.path.exists(tmp_path):
+                user_dir.add_item(File(f'file{i}.pdf'))
                 i += 1
             else:
                 break
-
-        return pdf_list
+        return user_dir
 
     # when pdf_list is ready
-    def create_pdf_from_pdf_list(self, user_id, pdf_list: list, file_name) -> str:
+    def create_pdf_from_pdf_list(self, user_dir_composite: CompositeFile, file_name) -> str:
         """
         Merges pdf files in <user_id/> folder
         :param user_id: stands for the folder name where photos are stored
@@ -66,14 +72,16 @@ class MergePdfFileManager(LocalFileManager):
         :return: path to new pdf
         """
 
-        pdf_count = len(pdf_list)
+        pdf_count = len(user_dir_composite.children)
         pdfMerger = PdfMerger()
 
         for i in range(pdf_count, 0, -1):
-            pdfMerger.append(f'{downloads_path}/{user_id}/file{i}.pdf')
+            tmp_path = user_dir_composite.children[i - 1].path
+            pdfMerger.append(tmp_path)
 
-        final_path = f'{downloads_path}/{user_id}/{file_name}.pdf'
-        pdfMerger.write(final_path)
+        user_dir_composite.add_item(File(f'{file_name}.pdf'))
+
+        pdfMerger.write(user_dir_composite.children[-1].path)
         pdfMerger.close()
 
-        return final_path
+        return user_dir_composite.children[-1].path
