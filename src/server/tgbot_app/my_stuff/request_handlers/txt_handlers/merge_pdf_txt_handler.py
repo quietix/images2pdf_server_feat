@@ -5,11 +5,22 @@ from src.server.tgbot_app.my_stuff.factories.interaction_stuff_factories.merge_p
 
 
 class MergePdfTxtHandler(AbstractTxtRequestHandler):
+    mergePdfFactory = MergePdfFactory()
+    _response = mergePdfFactory.get_response()
 
-    def __init__(self):
-        mergePdfFactory = MergePdfFactory()
-        self._response = mergePdfFactory.get_response()
-        self._file_manager = mergePdfFactory.get_file_manager()
+
+    def __init__(self, response = mergePdfFactory.get_response(), file_manager = mergePdfFactory.get_file_manager()):
+        self._response = response
+        self._file_manager = file_manager
+
+
+    def get_file_manager(self):
+        return self._file_manager
+
+
+    def get_response(self):
+        return self._response
+
 
     def handle_request(self, msg: TxtMsg):
         if msg.text == "/merge_pdf":

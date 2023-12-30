@@ -5,11 +5,21 @@ import time
 
 
 class Img2PdfTxtHandler(AbstractTxtRequestHandler):
+    img2pdfFactory = Img2PdfFactory()
+    _response = img2pdfFactory.get_response()
 
-    def __init__(self):
-        img2pdfFactory = Img2PdfFactory()
-        self._response = img2pdfFactory.get_response()
-        self._file_manager = img2pdfFactory.get_file_manager()
+    def __init__(self, response = img2pdfFactory.get_response(), file_manager = img2pdfFactory.get_file_manager()):
+        self._response = response
+        self._file_manager = file_manager
+
+
+    def get_file_manager(self):
+        return self._file_manager
+
+
+    def get_response(self):
+        return self._response
+
 
     def handle_request(self, msg: TxtMsg):
         if msg.text == '/create_pdf':
